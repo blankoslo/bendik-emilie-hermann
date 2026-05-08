@@ -8,6 +8,27 @@
       "when": 1778225959453,
       "tag": "0000_giant_excalibur",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778233520414,
+      "tag": "0001_rare_ozymandias",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778233900316,
+      "tag": "0002_tiny_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778239874136,
+      "tag": "0003_strong_annihilus",
+      "breakpoints": true
     }
   ]
 }

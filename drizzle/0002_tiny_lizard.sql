@@ -1,0 +1,2 @@
+ALTER TABLE "friluftskompis_trip_group_member" ADD COLUMN "userId" varchar(256);--> statement-breakpoint
+CREATE INDEX "trip_group_member_user_idx" ON "friluftskompis_trip_group_member" USING btree ("userId");

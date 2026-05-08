@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { HydrateClient } from "~/trpc/server";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { WeatherWidget } from "./_components/weather-widget";
 import { CabinList } from "./_components/cabin-list";
+import { FamilyList } from "./_components/family-list";
 
 export default function Home() {
   return (
@@ -53,6 +55,15 @@ export default function Home() {
                 </h1>
                 <p className="mt-2 text-white/50">Søk blant 1 999 DNT-hytter</p>
               </div>
+              <div className="flex w-full justify-end">
+                <Link
+                  href="/familie/ny"
+                  className="rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600"
+                >
+                  + Ny familie
+                </Link>
+              </div>
+              <FamilyList />
               <CabinList />
             </div>
           </Show>
