@@ -1,4 +1,4 @@
-import { index, pgEnum, pgTableCreator } from "drizzle-orm/pg-core";
+import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const createTable = pgTableCreator((name) => `friluftskompis_${name}`);
@@ -48,13 +48,36 @@ export const tripGroupMembers = createTable(
   ],
 );
 
+export const tripGroupUsers = createTable(
+  "trip_group_user",
+  (d) => ({
+    groupId: d
+      .integer()
+      .notNull()
+      .references(() => tripGroups.id, { onDelete: "cascade" }),
+    userId: d.varchar({ length: 256 }).notNull(),
+  }),
+  (t) => [
+    primaryKey({ columns: [t.groupId, t.userId] }),
+    index("trip_group_user_user_idx").on(t.userId),
+  ],
+);
+
 export const tripGroupsRelations = relations(tripGroups, ({ many }) => ({
   members: many(tripGroupMembers),
+  users: many(tripGroupUsers),
 }));
 
 export const tripGroupMembersRelations = relations(tripGroupMembers, ({ one }) => ({
   group: one(tripGroups, {
     fields: [tripGroupMembers.groupId],
+    references: [tripGroups.id],
+  }),
+}));
+
+export const tripGroupUsersRelations = relations(tripGroupUsers, ({ one }) => ({
+  group: one(tripGroups, {
+    fields: [tripGroupUsers.groupId],
     references: [tripGroups.id],
   }),
 }));

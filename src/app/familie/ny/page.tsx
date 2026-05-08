@@ -66,7 +66,6 @@ export default function NyFamiliePage() {
     createGroup.mutate({
       name: familyName.trim(),
       createdById: user.id,
-      creatorName: user.fullName ?? user.firstName ?? user.id,
       members: validMembers,
     });
   }

@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 export function FamilyList() {
   const { user } = useUser();
   const { data: groups, isLoading } = api.groups.list.useQuery(
-    { createdById: user?.id ?? "" },
+    { userId: user?.id ?? "" },
     { enabled: !!user?.id },
   );
 

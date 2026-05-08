@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { tripGroups, tripGroupMembers } from "~/server/db/schema";
+import { tripGroups, tripGroupMembers, tripGroupUsers } from "~/server/db/schema";
 
 const experienceLevels = ["BEGINNER", "INTERMEDIATE", "EXPERIENCED", "EXPERT"] as const;
 
@@ -14,7 +14,6 @@ const memberInput = z.object({
 const createWithMembersInput = z.object({
   name: z.string().min(1),
   createdById: z.string(),
-  creatorName: z.string().min(1),
   members: z.array(memberInput),
 });
 
@@ -26,11 +25,12 @@ export const groupsRouter = createTRPCRouter({
         .insert(tripGroups)
         .values({ name: input.name, createdById: input.createdById })
         .returning();
-      const memberRows = [
-        { groupId: group!.id, userId: input.createdById, name: input.creatorName },
-        ...input.members.map((m) => ({ ...m, groupId: group!.id })),
-      ];
-      await ctx.db.insert(tripGroupMembers).values(memberRows);
+      await ctx.db.insert(tripGroupUsers).values({ groupId: group!.id, userId: input.createdById });
+      if (input.members.length > 0) {
+        await ctx.db.insert(tripGroupMembers).values(
+          input.members.map((m) => ({ ...m, groupId: group!.id })),
+        );
+      }
       return group;
     }),
 
@@ -41,18 +41,24 @@ export const groupsRouter = createTRPCRouter({
         .insert(tripGroups)
         .values({ name: input.name, createdById: input.createdById })
         .returning();
+      await ctx.db.insert(tripGroupUsers).values({ groupId: group!.id, userId: input.createdById });
       return group;
     }),
 
   list: publicProcedure
-    .input(z.object({ createdById: z.string() }))
-    .query(({ ctx, input }) =>
-      ctx.db.query.tripGroups.findMany({
-        where: eq(tripGroups.createdById, input.createdById),
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const rows = await ctx.db
+        .select({ groupId: tripGroupUsers.groupId })
+        .from(tripGroupUsers)
+        .where(eq(tripGroupUsers.userId, input.userId));
+      if (rows.length === 0) return [];
+      return ctx.db.query.tripGroups.findMany({
+        where: inArray(tripGroups.id, rows.map((r) => r.groupId)),
         with: { members: true },
         orderBy: (t, { desc }) => [desc(t.createdAt)],
-      }),
-    ),
+      });
+    }),
 
   getById: publicProcedure
     .input(z.object({ id: z.number().int() }))
@@ -106,5 +112,22 @@ export const groupsRouter = createTRPCRouter({
     .input(z.object({ id: z.number().int() }))
     .mutation(({ ctx, input }) =>
       ctx.db.delete(tripGroupMembers).where(eq(tripGroupMembers.id, input.id)),
+    ),
+
+  addUser: publicProcedure
+    .input(z.object({ groupId: z.number().int(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(tripGroupUsers).values(input).onConflictDoNothing();
+    }),
+
+  removeUser: publicProcedure
+    .input(z.object({ groupId: z.number().int(), userId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .delete(tripGroupUsers)
+        .where(
+          eq(tripGroupUsers.groupId, input.groupId) &&
+          eq(tripGroupUsers.userId, input.userId),
+        ),
     ),
 });
