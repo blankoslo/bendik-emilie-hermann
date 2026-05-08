@@ -4,25 +4,44 @@ import { Slot } from "radix-ui"
 
 import { cn } from "~/lib/utils"
 
+/**
+ * Badge / tag — Figma lag-12-ds.
+ * Default Figma badge: bg-primary, text-white (#d9d9d9), 14px DM Sans regular,
+ * 16px line-height, padding 4×8, radius-full.
+ *  - Actionable=True  → includes a trailing 16px icon, gap 8px (default).
+ *  - Actionable=False → label only, gap 4px (use `actionable={false}` shorthand).
+ *
+ * Variant aliases (`info`, `success`, `warning`, `error`) use the Figma system
+ * color pair (light bg + dark text).
+ */
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-6 w-fit shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full border border-transparent px-2 py-1 font-sans text-sm font-normal leading-4 whitespace-nowrap transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 aria-invalid:border-destructive [&>svg]:pointer-events-none [&>svg]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary-hover",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
-        destructive:
-          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
         outline:
-          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+          "border-input text-foreground [a]:hover:bg-secondary [a]:hover:text-secondary-foreground",
+        info: "bg-info-light text-info",
+        success: "bg-success-light text-success",
+        warning: "bg-warning-light text-warning",
+        error: "bg-error-light text-error",
+        destructive:
+          "bg-error-light text-error focus-visible:ring-destructive/30",
         ghost:
-          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+          "text-primary hover:bg-secondary",
         link: "text-primary underline-offset-4 hover:underline",
+      },
+      actionable: {
+        true: "gap-2",
+        false: "gap-1",
       },
     },
     defaultVariants: {
       variant: "default",
+      actionable: true,
     },
   }
 )
@@ -30,6 +49,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = "default",
+  actionable,
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
@@ -40,7 +60,8 @@ function Badge({
     <Comp
       data-slot="badge"
       data-variant={variant}
-      className={cn(badgeVariants({ variant }), className)}
+      data-actionable={actionable ?? true}
+      className={cn(badgeVariants({ variant, actionable }), className)}
       {...props}
     />
   )
