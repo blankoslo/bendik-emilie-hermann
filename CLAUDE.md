@@ -53,6 +53,7 @@ src/
 - `docs/apis.md` – All available APIs (free + registered)
 - `docs/stories.md` – User story map (Discover→Return journeys)
 - `docs/strategy.md` – Badge priority / implementation order
+- `docs/design.md` – Product/design brief (persona, brand, screen inventory, Stitch prompts)
 
 ## Badge Score Summary
 | Category | Badges | Points |

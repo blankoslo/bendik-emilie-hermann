@@ -47,9 +47,10 @@ Once F1–F9 done, combos are cheap:
 
 ## F18 AI-gjennomgående (50 pts)
 Need ≥3 AI features as UX thread. Natural picks:
-1. AI packing list (F6)
+1. AI packing list (F6) — now per-kid with "your job" highlight
 2. AI weather-triggered replanning (B10)
 3. AI meal plan (P5)
+4. **AI-generated daily missions per kid (D21/T21)** — bonus thread, makes F18 demo-ready
 → Frame these as "Friluftskompis AI" throughout UI
 
 ## F20 Administrasjon (50 pts)
@@ -92,6 +93,17 @@ Document 3 before/after UI refinements as you build. Screenshot + explanation.
 | **Realistic total** | **~995** |
 
 Jury badges (600 pts) depend on demo quality — target J2 (Best use of AI) by documenting AI usage throughout.
+
+## Jury angle: the kid-engagement thread
+
+Our differentiator is **"the trip planner where the kids have a vote and earn stamps for showing up"** — see `design.md` for full positioning. This unlocks:
+
+- **J1** Best demo — open the demo with Jonas tapping "I did it!" and earning an ExplorerStamp. Visceral, 5 seconds, sells the product.
+- **J3** Most creative — no other team will land "kids as co-planners" as a UX primitive.
+- **DS4** Mikrointeraksjon — MI-7 (stamp slam) + MI-8 (voting chip) are the showpiece interactions.
+- **DS5** Crafted, not generated — three before/after refinements: KidMissionCard, ExplorerStamp, voting chip.
+
+**Build order discipline:** kid-engagement features are *additive on top of MVP*, not a replacement. F1–F9 must work for adults first; layer kid mode in once the spine is green.
 
 ## Tech priorities
 - Use UT.no GraphQL early (cabins + routes = core data)
