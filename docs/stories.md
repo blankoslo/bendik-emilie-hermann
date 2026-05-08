@@ -20,7 +20,7 @@ Source: https://blank.avion.io/share/LXuAxH6skQb65ndHv
 | D1 | Discover | Search by area, cabin name, or mountain peak |
 | D2 | Discover | View topographic Norway map with DNT cabins layer |
 | B1 | Decide | See weather forecast for location and timeframe |
-| B3 | Decide | View route planning between cabins (distance, time, elevation) |
+| B3 | Decide | Route planning between cabins with distance, time, and elevation per leg — legs over 1000 hm marked as demanding |
 | B6 | Decide | Day-by-day view for multi-day trips |
 | G1 | Gather | Create trip and invite participants via shareable link |
 | P1 | Prepare | AI-generated packing list (weather, duration, group size) |
@@ -48,10 +48,22 @@ Source: https://blank.avion.io/share/LXuAxH6skQb65ndHv
 | B1 | See weather forecast for location and timeframe |
 | B2 | Check single cabin availability |
 | B2b | Check availability across all cabins in multi-day route |
-| B3 | View route planning between cabins (distance, time, elevation) |
+| B3 | Route planning between cabins with distance, time, and elevation per leg — legs over 1000 hm marked as demanding |
 | B6 | Day-by-day view for multi-day trips |
 | B10 | AI-generated replanning suggestions when weather changes significantly |
 | B13 | Optimal date suggestions based on forecast and availability |
+
+### B3 – Ruteplanlegging mellom hytter
+
+**Som en turplanlegger,**
+ønsker jeg å se ruteplanlegging mellom hytter med avstand, tid og høydemeter per etappe,
+slik at jeg kan vurdere om ruten er realistisk for gruppen vår.
+
+**Akseptansekriterier**
+
+- Gitt at flere hytter er valgt i rekkefølge, når ruten beregnes, så vises total distanse, høydemeter og estimert tid per etappe.
+- Gitt at en etappe har mer enn 1000 høydemeter, når ruten vises, så markeres etappen som krevende.
+- Gitt at brukeren endrer rekkefølgen på hyttene, når ruten oppdateres, så reflekteres endringen umiddelbart i kartet og statistikken.
 
 ---
 

@@ -2,6 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
+
+type Season = "Vår" | "Sommer" | "Høst" | "Vinter";
+
+const SEASONS: Season[] = ["Vår", "Sommer", "Høst", "Vinter"];
+
+const SEASON_STYLE: Record<Season, { active: string; inactive: string }> = {
+  Vår:    { active: "bg-emerald-500/30 text-emerald-300 ring-1 ring-emerald-400/40", inactive: "bg-white/10 text-white/60" },
+  Sommer: { active: "bg-yellow-500/30 text-yellow-300 ring-1 ring-yellow-400/40",   inactive: "bg-white/10 text-white/60" },
+  Høst:   { active: "bg-orange-500/30 text-orange-300 ring-1 ring-orange-400/40",   inactive: "bg-white/10 text-white/60" },
+  Vinter: { active: "bg-sky-500/30 text-sky-300 ring-1 ring-sky-400/40",             inactive: "bg-white/10 text-white/60" },
+};
+
+/** Months are 1-based */
+function getCurrentSeason(): Season {
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) return "Vår";
+  if (month >= 6 && month <= 8) return "Sommer";
+  if (month >= 9 && month <= 11) return "Høst";
+  return "Vinter";
+}
+
 type Grading = "EASY" | "MODERATE" | "TOUGH" | "VERY_TOUGH";
 const GRADINGS: Grading[] = ["EASY", "MODERATE", "TOUGH", "VERY_TOUGH"];
 const GRADING_LABEL: Record<Grading, string> = {
@@ -99,6 +120,19 @@ function matchesDistance(route: Route, bucket: DistanceBucket | null): boolean {
   return km > 15;
 }
 
+const SEASON_ALLOWED_GRADINGS: Record<Season, Set<Grading>> = {
+  Vinter: new Set(["EASY"]),
+  Vår:    new Set(["EASY", "MODERATE"]),
+  Høst:   new Set(["EASY", "MODERATE", "TOUGH"]),
+  Sommer: new Set(["EASY", "MODERATE", "TOUGH", "VERY_TOUGH"]),
+};
+
+function matchesSeason(route: Route, season: Season | null): boolean {
+  if (!season) return true;
+  if (!route.gradingAb) return true; // no grading → always include
+  return SEASON_ALLOWED_GRADINGS[season].has(route.gradingAb);
+}
+
 interface RouteListProps {
   near?: { lon: number; lat: number };
 }
@@ -109,6 +143,7 @@ export function RouteList({ near }: RouteListProps) {
   const [activeGradings, setActiveGradings] = useState<Grading[]>([]);
   const [durationFilter, setDurationFilter] = useState<DurationBucket | null>(null);
   const [distanceFilter, setDistanceFilter] = useState<DistanceBucket | null>(null);
+  const [seasonFilter, setSeasonFilter] = useState<Season | null>(getCurrentSeason);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 350);
@@ -149,7 +184,7 @@ export function RouteList({ near }: RouteListProps) {
     isLoading = listLoading;
   }
 
-  // Client-side filters: name search, duration, distance
+  // Client-side filters: name search, season, duration, distance
   const q = debouncedSearch.toLowerCase();
   const filteredRoutes = routes
     .filter((r) =>
@@ -159,6 +194,7 @@ export function RouteList({ near }: RouteListProps) {
       (r.placeB?.toLowerCase().includes(q) ?? false) ||
       r.descriptionAb?.toLowerCase().includes(q),
     )
+    .filter((r) => matchesSeason(r, seasonFilter))
     .filter((r) => matchesDuration(r, durationFilter))
     .filter((r) => matchesDistance(r, distanceFilter));
   const clientFiltered = filteredRoutes.length !== routes.length;
@@ -166,7 +202,11 @@ export function RouteList({ near }: RouteListProps) {
   return (
     <section className="w-full max-w-4xl">
       <div className="mb-4">
-        <h2 className="mb-1 text-2xl font-bold text-white">Turforslag</h2>
+        <h2 className="mb-1 text-2xl font-bold text-white">
+          {!near && seasonFilter
+            ? `Populære turer – ${seasonFilter} ${new Date().getFullYear()}`
+            : "Turforslag"}
+        </h2>
         <p className="mb-4 text-sm text-white/50">Merkede ruter fra DNT og UT.no</p>
         <input
           type="text"
@@ -196,6 +236,34 @@ export function RouteList({ near }: RouteListProps) {
         {activeGradings.length > 0 && (
           <button
             onClick={() => setActiveGradings([])}
+            className="rounded-full px-3 py-1 text-sm text-white/40 hover:text-white/70"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Season filter */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-white/40 uppercase tracking-wider w-16">Årstid</span>
+        {SEASONS.map((s) => {
+          const isActive = seasonFilter === s;
+          const style = SEASON_STYLE[s];
+          return (
+            <button
+              key={s}
+              onClick={() => setSeasonFilter(isActive ? null : s)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-all hover:brightness-110 ${
+                isActive ? style.active : style.inactive
+              }`}
+            >
+              {s}
+            </button>
+          );
+        })}
+        {seasonFilter && (
+          <button
+            onClick={() => setSeasonFilter(null)}
             className="rounded-full px-3 py-1 text-sm text-white/40 hover:text-white/70"
           >
             ✕

@@ -4,78 +4,208 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─────────────────────────────────────────────────────────────────────────────
- * Friluftskompis design tokens — sourced from Figma (lag-12-ds, Atoms/Components)
- * Synced via Figma Dev Mode MCP.
- * Variable names below mirror Figma names; semantic shadcn aliases below map
- * onto these so existing shadcn components inherit the brand automatically.
- * ───────────────────────────────────────────────────────────────────────────── */
+/*
+  Friluftskompis — design tokens
+  Mirror of the Figma file `lag-12-ds` (Atoms/Components page).
+  Two layers:
+    1. Raw Figma tokens (`--brand-400`, `--space-300`, etc.) — kept verbatim so changes in Figma map 1:1 here.
+    2. shadcn semantic tokens (`--primary`, `--background`, etc.) re-pointed at Figma raw values so default shadcn components render correctly.
+*/
 
-@theme {
-  /* DM Sans is the primary product font (Figma: typography/font-family/font-family-1).
-   * Geist is kept as a system fallback.
-   * Inter ("font-family/body-text" in Figma) is referenced for one button style;
-   * for hackathon scope DM Sans covers both. */
-  --font-sans: var(--font-dm-sans), var(--font-geist-sans), ui-sans-serif,
-    system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+:root {
+  /* ── Figma: brand ── */
+  --brand-100: #dcdeff;
+  --brand-400: #4f59fb;
+  --brand-600: #202464;
+
+  /* ── Figma: neutral ── */
+  --neutral-white: #ffffff;
+  --neutral-200: #a6a6a6;
+  --neutral-300: #808080;
+  --neutral-black: #000000;
+
+  /* ── Figma: text ── */
+  --text-default: #333333;
+  --text-disabled: #4d4d4d;
+  --text-placeholder: #666666;
+  --text-primary: #4f59fb;
+  --text-primary-hover: #2f3597;
+  --text-white: #d9d9d9;
+  --text-black: #000000;
+  --text-black-secondary: #4d4d4d;
+
+  /* ── Figma: background ── */
+  --background-white: #ffffff;
+  --background-primary: #4f59fb;
+  --background-primary-hover: #2f3597;
+  --background-disabled: #d9d9d9;
+
+  /* ── Figma: border ── */
+  --border-default: #d9d9d9;
+  --border-primary: #4f59fb;
+  --border-disabled: #a6a6a6;
+  --border-stroke: 2px;
+
+  /* ── Figma: system (alerts) ── */
+  --system-info: #1d4ed8;
+  --system-info-light: #dbeafe;
+  --system-success: #0f8402;
+  --system-success-light: #d4ffcf;
+  --system-error: #bf0000;
+  --system-error-light: #ffcece;
+  --system-warning: #e15b02;
+  --system-warning-light: #ffdac2;
+
+  /* ── Figma: radius ── */
+  --radius-small: 4px;
+  --radius-full: 999px;
+
+  /* ── Figma: spacing scale ── */
+  --space-100: 4px;
+  --space-200: 8px;
+  --space-300: 16px;
+  --space-500: 32px;
+
+  /* ── Figma: typography ──
+     font-family-1 → DM Sans (body)
+     font-family-2 → Bricolage Grotesque (headings)
+     body-text     → Inter (secondary/text button)
+  */
+  --font-family-1: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-family-2: var(--font-bricolage), Georgia, serif;
+  --font-body-text: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* Aliases used elsewhere in this file */
+  --font-display: var(--font-family-1);
+  --font-heading: var(--font-family-2);
+  --font-body: var(--font-body-text);
+
+  --font-size-200: 14px;
+  --font-size-300: 16px;
+  --font-size-400: 18px;
+  --font-size-600: 32px;
+  --font-size-700: 40px;
+  --font-size-800: 48px;
+  --line-height-200: 16px;
+  --line-height-300: 20px;
+  --line-height-400: 24px;
+  --line-height-600: 32px;
+  --line-height-700: 40px;
+  --line-height-800: 48px;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ── shadcn semantic tokens (mapped to Figma) ── */
+  --background: var(--background-white);
+  --foreground: var(--text-default);
+  --card: var(--background-white);
+  --card-foreground: var(--text-default);
+  --popover: var(--background-white);
+  --popover-foreground: var(--text-default);
+  --primary: var(--brand-400);
+  --primary-foreground: var(--text-white);
+  --secondary: var(--brand-100);
+  --secondary-foreground: var(--text-primary);
+  --muted: #f5f5f5;
+  --muted-foreground: var(--text-placeholder);
+  --accent: var(--brand-100);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--system-error);
+  --destructive-foreground: var(--neutral-white);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--brand-400);
+  --radius: 4px;
+
+  --sidebar: var(--background-white);
+  --sidebar-foreground: var(--text-default);
+  --sidebar-primary: var(--brand-400);
+  --sidebar-primary-foreground: var(--text-white);
+  --sidebar-accent: var(--brand-100);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-default);
+  --sidebar-ring: var(--brand-400);
+
+  --chart-1: var(--brand-400);
+  --chart-2: var(--text-primary-hover);
+  --chart-3: var(--brand-600);
+  --chart-4: var(--brand-100);
+  --chart-5: var(--neutral-300);
 }
 
-@theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+/* ── Dark mode overrides — applied when `.dark` class is present on an ancestor ── */
+.dark {
+  --background: var(--brand-600);
+  --foreground: var(--neutral-white);
+  --card: var(--text-primary-hover);
+  --card-foreground: var(--neutral-white);
+  --popover: var(--text-primary-hover);
+  --popover-foreground: var(--neutral-white);
+  --primary: var(--brand-400);
+  --primary-foreground: var(--neutral-white);
+  --secondary: var(--text-primary-hover);
+  --secondary-foreground: var(--brand-100);
+  --muted: var(--text-primary-hover);
+  --muted-foreground: var(--neutral-200);
+  --accent: var(--text-primary-hover);
+  --accent-foreground: var(--brand-100);
+  --destructive: var(--system-error-light);
+  --destructive-foreground: var(--system-error);
+  --border: rgb(255 255 255 / 12%);
+  --input: rgb(255 255 255 / 18%);
+  --ring: var(--brand-400);
 
-  /* shadcn semantic aliases */
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
+  --sidebar: var(--brand-600);
+  --sidebar-foreground: var(--neutral-white);
+  --sidebar-primary: var(--brand-400);
+  --sidebar-primary-foreground: var(--neutral-white);
+  --sidebar-accent: var(--text-primary-hover);
+  --sidebar-accent-foreground: var(--neutral-white);
+  --sidebar-border: rgb(255 255 255 / 12%);
+  --sidebar-ring: var(--brand-400);
+}
+
+/*
+  Expose Figma tokens as Tailwind v4 utilities.
+  Class examples: `bg-brand-400`, `text-text-default`, `p-space-300`, `font-display`, `rounded-figma`.
+*/
+@theme inline {
+  /* shadcn semantic colors → Tailwind */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
-  /* Figma brand scale */
-  --color-brand-100: var(--brand-100);
-  --color-brand-400: var(--brand-400);
-  --color-brand-600: var(--brand-600);
-
-  /* Figma system colors (info/success/warning/error + light pair) */
-  --color-info: var(--info);
-  --color-info-light: var(--info-light);
-  --color-success: var(--success);
-  --color-success-light: var(--success-light);
-  --color-warning: var(--warning);
-  --color-warning-light: var(--warning-light);
-  --color-error: var(--error);
-  --color-error-light: var(--error-light);
-
-  /* Radius scale — Figma radius/radius-small = 4px, radius/radius-full = 100 */
+  /* shadcn radius scale → derived from --radius */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -83,107 +213,117 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --radius-full: 9999px;
+
+  /* Figma raw tokens → Tailwind */
+  --color-brand-100: var(--brand-100);
+  --color-brand-400: var(--brand-400);
+  --color-brand-600: var(--brand-600);
+  --color-text-default: var(--text-default);
+  --color-text-disabled: var(--text-disabled);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-text-primary: var(--text-primary);
+  --color-text-primary-hover: var(--text-primary-hover);
+  --color-text-white: var(--text-white);
+  --color-background-white: var(--background-white);
+  --color-background-primary: var(--background-primary);
+  --color-background-primary-hover: var(--background-primary-hover);
+  --color-background-disabled: var(--background-disabled);
+  --color-border-default: var(--border-default);
+  --color-border-primary: var(--border-primary);
+  --color-border-disabled: var(--border-disabled);
+  --color-system-info: var(--system-info);
+  --color-system-info-light: var(--system-info-light);
+  --color-system-success: var(--system-success);
+  --color-system-success-light: var(--system-success-light);
+  --color-system-error: var(--system-error);
+  --color-system-error-light: var(--system-error-light);
+  --color-system-warning: var(--system-warning);
+  --color-system-warning-light: var(--system-warning-light);
+
+  /* Spacing → Tailwind */
+  --spacing-space-100: 4px;
+  --spacing-space-200: 8px;
+  --spacing-space-300: 16px;
+  --spacing-space-500: 32px;
+
+  /* Radii → Tailwind */
+  --radius-figma: 4px;
+  --radius-figma-full: 999px;
+
+  /* Typography → Tailwind */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-heading: var(--font-heading);
+  --font-sans: var(--font-display);
+  --text-fs-200: 14px;
+  --text-fs-300: 16px;
+  --text-fs-400: 18px;
+  --text-fs-600: 32px;
+  --text-fs-700: 40px;
+  --text-fs-800: 48px;
 }
 
-:root {
-  /* ── Figma raw tokens ─────────────────────────────────────────────────────── */
-  /* Brand */
-  --brand-100: #dcdeff;
-  --brand-400: #4f59fb;
-  --brand-600: #202464;
-
-  /* System */
-  --info: #1d4ed8;
-  --info-light: #dbeafe;
-  --success: #0f8402;
-  --success-light: #d4ffcf;
-  --warning: #e15b02;
-  --warning-light: #ffdac2;
-  --error: #bf0000;
-  --error-light: #ffcece;
-
-  /* Neutral (for reference; mapped via semantic tokens below) */
-  --neutral-200: #a6a6a6;
-  --neutral-300: #808080;
-
-  /* ── shadcn semantic tokens — mapped to Figma ─────────────────────────────── */
-  --background: #ffffff;                       /* background/background-white */
-  --foreground: #333333;                       /* text/text-default */
-
-  --card: #ffffff;
-  --card-foreground: #333333;
-  --popover: #ffffff;
-  --popover-foreground: #333333;
-
-  --primary: #4f59fb;                          /* background/background-primary */
-  --primary-foreground: #d9d9d9;               /* text/text-white */
-  --primary-hover: #2f3597;                    /* background/background-primary-hover */
-
-  --secondary: #dcdeff;                        /* brand-100 */
-  --secondary-foreground: #4f59fb;             /* text/text-primary */
-
-  --muted: #f5f5f5;
-  --muted-foreground: #666666;                 /* text/text-placeholder */
-
-  --accent: #dcdeff;                           /* brand-100 */
-  --accent-foreground: #4f59fb;
-
-  --destructive: #bf0000;                      /* color/system/error */
-  --destructive-foreground: #ffffff;
-
-  --border: #d9d9d9;                           /* border/border-default */
-  --input: #d9d9d9;
-  --ring: #4f59fb;                             /* border/border-primary */
-
-  --chart-1: #4f59fb;
-  --chart-2: #2f3597;
-  --chart-3: #202464;
-  --chart-4: #dcdeff;
-  --chart-5: #808080;
-
-  /* radius/radius-small = 4px → 0.25rem */
-  --radius: 0.25rem;
-
-  --sidebar: #ffffff;
-  --sidebar-foreground: #333333;
-  --sidebar-primary: #4f59fb;
-  --sidebar-primary-foreground: #d9d9d9;
-  --sidebar-accent: #dcdeff;
-  --sidebar-accent-foreground: #4f59fb;
-  --sidebar-border: #d9d9d9;
-  --sidebar-ring: #4f59fb;
-}
-
-.dark {
-  --background: #202464;                       /* brand-600 as dark surface */
-  --foreground: #ffffff;
-  --card: #2f3597;
-  --card-foreground: #ffffff;
-  --popover: #2f3597;
-  --popover-foreground: #ffffff;
-  --primary: #4f59fb;
-  --primary-foreground: #ffffff;
-  --primary-hover: #dcdeff;
-  --secondary: #2f3597;
-  --secondary-foreground: #dcdeff;
-  --muted: #2f3597;
-  --muted-foreground: #a6a6a6;
-  --accent: #2f3597;
-  --accent-foreground: #dcdeff;
-  --destructive: #ffcece;
-  --destructive-foreground: #bf0000;
-  --border: rgb(255 255 255 / 12%);
-  --input: rgb(255 255 255 / 18%);
-  --ring: #4f59fb;
-  --sidebar: #202464;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #4f59fb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2f3597;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 12%);
-  --sidebar-ring: #4f59fb;
+/*
+  Figma Text Styles → reusable utility classes.
+  Each maps 1:1 to a named text style in `lag-12-ds` › Tokens › Semantics.
+  Use these instead of ad-hoc font-size + leading combinations so we stay aligned with Figma.
+*/
+@layer components {
+  .heading-large {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-800);
+    line-height: var(--line-height-800);
+    font-weight: var(--font-weight-bold);
+  }
+  .heading-medium {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-700);
+    line-height: var(--line-height-700);
+    font-weight: var(--font-weight-semibold);
+  }
+  .heading-small {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-600);
+    line-height: var(--line-height-600);
+    font-weight: var(--font-weight-semibold);
+  }
+  .body-large {
+    font-family: var(--font-display);
+    font-size: var(--font-size-600);
+    line-height: var(--line-height-600);
+    font-weight: var(--font-weight-regular);
+  }
+  .body-medium {
+    font-family: var(--font-display);
+    font-size: var(--font-size-400);
+    line-height: var(--line-height-400);
+    font-weight: var(--font-weight-regular);
+  }
+  .body-small {
+    font-family: var(--font-display);
+    font-size: var(--font-size-300);
+    line-height: var(--line-height-300);
+    font-weight: var(--font-weight-regular);
+  }
+  .body-xsmall {
+    font-family: var(--font-display);
+    font-size: var(--font-size-200);
+    line-height: var(--line-height-200);
+    font-weight: var(--font-weight-regular);
+  }
+  .button-text {
+    font-family: var(--font-display);
+    font-size: var(--font-size-400);
+    line-height: var(--line-height-400);
+    font-weight: var(--font-weight-semibold);
+  }
+  .button-text-alt {
+    /* Figma `components/button` — used by secondary + text buttons */
+    font-family: var(--font-body);
+    font-size: var(--font-size-400);
+    line-height: 1.3;
+    font-weight: var(--font-weight-bold);
+  }
 }
 
 @layer base {
@@ -192,14 +332,30 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-display);
+    font-size: var(--font-size-400);
+    line-height: var(--line-height-400);
   }
   html {
     @apply font-sans;
   }
-  .maplibregl-popup-content {
-    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+}
+
+/* Onboarding microinteraction — green glow on newly added family member row.
+   Per design.md §9: 600ms fade-out, soft success tint. */
+@keyframes onboarding-glow {
+  0% {
+    box-shadow: 0 0 0 4px var(--system-success-light), 0 0 24px 4px var(--system-success-light);
   }
-  .maplibregl-popup-tip {
-    @apply hidden!;
+  100% {
+    box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
+  }
+}
+.onboarding-glow {
+  animation: onboarding-glow 600ms ease-out 320ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-glow {
+    animation: none;
   }
 }

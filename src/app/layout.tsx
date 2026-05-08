@@ -4,6 +4,8 @@ import { type Metadata } from "next";
 import { DM_Sans, Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { BottomNav } from "~/app/_components/bottom-nav";
+import { ServiceWorkerRegistration } from "~/app/_components/service-worker";
 
 import { ClerkProvider } from "@clerk/nextjs";
 
@@ -30,7 +32,11 @@ export default function RootLayout({
     <html lang="no" className={`${geist.variable} ${dmSans.variable}`}>
       <body>
         <ClerkProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <ServiceWorkerRegistration />
+            <div className="pb-16">{children}</div>
+            <BottomNav />
+          </TRPCReactProvider>
         </ClerkProvider>
       </body>
     </html>

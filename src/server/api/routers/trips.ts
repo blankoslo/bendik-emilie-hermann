@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { trips, tripCabins } from "~/server/db/schema";
+import { trips, tripCabins, tripGroupUsers } from "~/server/db/schema";
 import { env } from "~/env.js";
 
 const cabinInput = z.object({
@@ -62,6 +62,22 @@ export const tripsRouter = createTRPCRouter({
         orderBy: [desc(trips.createdAt)],
       }),
     ),
+
+  listByUser: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userGroups = await ctx.db
+        .select({ groupId: tripGroupUsers.groupId })
+        .from(tripGroupUsers)
+        .where(eq(tripGroupUsers.userId, input.userId));
+      if (userGroups.length === 0) return [];
+      const groupIds = userGroups.map((r) => r.groupId);
+      return ctx.db.query.trips.findMany({
+        where: inArray(trips.groupId, groupIds),
+        with: { cabins: true, group: true },
+        orderBy: [desc(trips.createdAt)],
+      });
+    }),
 
   getById: publicProcedure
     .input(z.object({ id: z.number().int() }))

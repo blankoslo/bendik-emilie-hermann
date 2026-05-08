@@ -3,7 +3,7 @@
 import { useRef, useEffect, useMemo } from "react";
 import type MapLibreGL from "maplibre-gl";
 import { api } from "~/trpc/react";
-import { Map, MapMarker, MarkerContent, MarkerLabel } from "~/components/ui/map";
+import { Map, MapMarker, MarkerContent, MarkerLabel, MapRoute } from "~/components/ui/map";
 
 export interface CabinStop {
   cabinId: string;
@@ -72,6 +72,14 @@ function formatDist(m: number) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 }
 
+function formatHours(h: number) {
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  if (hrs === 0) return `${mins} min`;
+  if (mins === 0) return `${hrs} t`;
+  return `${hrs} t ${mins} min`;
+}
+
 interface Props {
   routeLon: number;
   routeLat: number;
@@ -94,6 +102,32 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
     [data],
   );
 
+  const sortedSelected = useMemo(
+    () => [...selected].sort((a, b) => a.dayNumber - b.dayNumber),
+    [selected],
+  );
+
+  // Build ordered list of cabin points with coords for the leg stats query
+  const legQueryInput = useMemo(() => {
+    if (sortedSelected.length < 2) return null;
+    const points = sortedSelected
+      .map((s) => {
+        const found = nearCabins.find((c) => String(c.cabin.id) === s.cabinId);
+        if (!found) return null;
+        const coords = parseCabinCoords(found.cabin.geojson);
+        if (!coords) return null;
+        return { id: s.cabinId, name: s.cabinName, lon: coords[0], lat: coords[1] };
+      })
+      .filter((p): p is { id: string; name: string; lon: number; lat: number } => p !== null);
+    return points.length >= 2 ? points : null;
+  }, [sortedSelected, nearCabins]);
+
+  const { data: legs, isLoading: legsLoading } = api.cabins.legStats.useQuery(
+    legQueryInput!,
+    { enabled: legQueryInput !== null },
+  );
+
+  // Fit map to selected cabins whenever selection changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map || selected.length === 0) return;
@@ -149,7 +183,27 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
     );
   }
 
-  const sortedSelected = [...selected].sort((a, b) => a.dayNumber - b.dayNumber);
+  // Build per-leg route coordinates for the map
+  const legCoords = useMemo(() => {
+    return sortedSelected
+      .map((s) => {
+        const found = nearCabins.find((c) => String(c.cabin.id) === s.cabinId);
+        return found ? parseCabinCoords(found.cabin.geojson) : null;
+      })
+      .filter((c): c is [number, number] => c !== null);
+  }, [sortedSelected, nearCabins]);
+
+  // Totals across all legs
+  const totals = useMemo(() => {
+    if (!legs?.length) return null;
+    return {
+      distKm: Math.round(legs.reduce((s, l) => s + l.distKm, 0) * 10) / 10,
+      elevGainM: legs.every((l) => l.elevGainM != null)
+        ? legs.reduce((s, l) => s + (l.elevGainM ?? 0), 0)
+        : null,
+      estimatedHours: Math.round(legs.reduce((s, l) => s + l.estimatedHours, 0) * 10) / 10,
+    };
+  }, [legs]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,12 +220,14 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
           zoom={8}
           className="h-full w-full"
         >
+          {/* Route start */}
           <MapMarker longitude={routeLon} latitude={routeLat}>
             <MarkerContent>
               <div className="h-3 w-3 rounded-full border-2 border-white bg-blue-400 shadow" />
             </MarkerContent>
           </MapMarker>
 
+          {/* Unselected nearby cabins */}
           {nearCabins.map(({ cabin }) => {
             const coords = parseCabinCoords(cabin.geojson);
             if (!coords || isSelected(cabin.id)) return null;
@@ -184,6 +240,24 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
             );
           })}
 
+          {/* Route lines between selected cabins */}
+          {legCoords.length >= 2 &&
+            legCoords.slice(0, -1).map((from, i) => {
+              const to = legCoords[i + 1]!;
+              const leg = legs?.[i];
+              const demanding = leg?.demanding ?? false;
+              return (
+                <MapRoute
+                  key={`leg-${i}`}
+                  coordinates={[from, to]}
+                  color={demanding ? "#ef4444" : "#22c55e"}
+                  width={3}
+                  opacity={0.85}
+                />
+              );
+            })}
+
+          {/* Selected cabin markers */}
           {sortedSelected.map((s) => {
             const found = nearCabins.find((c) => String(c.cabin.id) === s.cabinId);
             const coords = found ? parseCabinCoords(found.cabin.geojson) : null;
@@ -204,6 +278,7 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
         </Map>
       </div>
 
+      {/* Selected stops */}
       {selected.length > 0 && (
         <div className="rounded-xl border border-green-400/20 bg-green-900/20 p-4">
           <p className="mb-3 text-sm font-semibold text-green-300">Valgte stopp ({selected.length})</p>
@@ -237,6 +312,56 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Leg stats */}
+      {legQueryInput !== null && (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-semibold text-white/70">Etapper</p>
+          {legsLoading && (
+            <div className="flex flex-col gap-2">
+              {legQueryInput.slice(0, -1).map((_, i) => (
+                <div key={i} className="h-14 animate-pulse rounded-xl bg-white/5" />
+              ))}
+            </div>
+          )}
+          {!legsLoading && legs?.map((leg, i) => (
+            <div
+              key={`${leg.fromId}-${leg.toId}`}
+              className={`flex flex-col gap-1 rounded-xl px-4 py-3 ${
+                leg.demanding
+                  ? "border border-red-500/30 bg-red-900/20"
+                  : "bg-white/5"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-white">
+                  <span className="mr-1 font-mono text-white/40">Dag {sortedSelected[i]?.dayNumber}→{sortedSelected[i + 1]?.dayNumber}</span>
+                  {leg.fromName} → {leg.toName}
+                </span>
+                {leg.demanding && (
+                  <span className="shrink-0 rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-300">
+                    Krevende
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3 text-xs text-white/60">
+                <span>📍 {leg.distKm} km</span>
+                {leg.elevGainM != null && <span>⬆ {leg.elevGainM.toLocaleString("no")} hm</span>}
+                {leg.elevLossM != null && <span>⬇ {leg.elevLossM.toLocaleString("no")} hm</span>}
+                <span>⏱ {formatHours(leg.estimatedHours)}</span>
+              </div>
+            </div>
+          ))}
+          {!legsLoading && totals && (
+            <div className="flex gap-4 rounded-xl bg-white/5 px-4 py-2 text-xs text-white/50">
+              <span className="font-semibold text-white/70">Totalt</span>
+              <span>📍 {totals.distKm} km</span>
+              {totals.elevGainM != null && <span>⬆ {totals.elevGainM.toLocaleString("no")} hm</span>}
+              <span>⏱ {formatHours(totals.estimatedHours)}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -293,7 +418,9 @@ export function StepCabins({ routeLon, routeLat, selected, onChange, onNext }: P
 
       <div className="flex justify-between pt-2">
         <p className="text-sm text-white/40">
-          {selected.length === 0 ? "Valgfritt – du kan fortsette uten å velge hytter" : `${selected.length} hytte${selected.length !== 1 ? "r" : ""} valgt`}
+          {selected.length === 0
+            ? "Valgfritt – du kan fortsette uten å velge hytter"
+            : `${selected.length} hytte${selected.length !== 1 ? "r" : ""} valgt`}
         </p>
         <button
           onClick={onNext}

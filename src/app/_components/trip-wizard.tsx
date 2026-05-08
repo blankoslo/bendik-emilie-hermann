@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { StepGroup } from "./wizard/step-group";
 import { StepRoute, type SelectedRoute } from "./wizard/step-route";
 import { StepCabins, type CabinStop } from "./wizard/step-cabins";
 import { StepDates } from "./wizard/step-dates";
 import { StepConfirm } from "./wizard/step-confirm";
+import { useDefaultGroup } from "~/lib/default-group";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -21,6 +23,8 @@ interface WizardState {
 const STEP_LABELS = ["Gruppe", "Rute", "Hytter", "Datoer", "Bekreft"];
 
 export function TripWizard() {
+  const { user } = useUser();
+  const { defaultGroup } = useDefaultGroup(user?.id);
   const [step, setStep] = useState<Step>(1);
   const [state, setState] = useState<WizardState>({
     groupId: null,
@@ -30,6 +34,14 @@ export function TripWizard() {
     startDate: null,
     endDate: null,
   });
+
+  // Auto-select default group and skip step 1
+  useEffect(() => {
+    if (defaultGroup && state.groupId === null) {
+      setState((s) => ({ ...s, groupId: defaultGroup.id, groupName: defaultGroup.name }));
+      setStep(2);
+    }
+  }, [defaultGroup, state.groupId]);
 
   function handleGroupSelect(groupId: number, groupName: string) {
     setState((s) => ({ ...s, groupId, groupName }));
@@ -121,15 +133,22 @@ export function TripWizard() {
         )}
       </div>
 
-      {/* Back button */}
-      {step > 1 && (
-        <button
-          onClick={() => setStep((s) => (s - 1) as Step)}
-          className="mt-4 text-sm text-white/40 hover:text-white/70"
-        >
-          ← Tilbake
-        </button>
-      )}
+      {/* Back / group info */}
+      <div className="mt-4 flex items-center justify-between">
+        {step > 1 ? (
+          <button
+            onClick={() => setStep((s) => (s - 1) as Step)}
+            className="text-sm text-white/40 hover:text-white/70"
+          >
+            ← Tilbake
+          </button>
+        ) : <span />}
+        {step > 1 && state.groupName && (
+          <span className="text-xs text-white/30">
+            👥 {state.groupName}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

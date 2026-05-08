@@ -5,9 +5,10 @@ import { nb } from "date-fns/locale";
 import { HydrateClient, caller } from "~/trpc/server";
 import { TripPackingList } from "~/app/_components/trip-packing-list";
 import { TripShareButton } from "~/app/_components/trip-share-button";
-import { TripWeather } from "~/app/_components/trip-weather";
 import { TripExpenses } from "~/app/_components/trip-expenses";
 import { TripRouteMap } from "~/app/_components/trip-route-map";
+import { TripDayTimeline } from "~/app/_components/trip-day-timeline";
+import { TripOfflineDownload } from "~/app/_components/trip-offline-download";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
+
 export default async function TurPage({ params }: Props) {
   const { id } = await params;
   const trip = await caller.trips.getById({ id: Number(id) });
@@ -56,6 +58,12 @@ export default async function TurPage({ params }: Props) {
             ← Hjem
           </Link>
           <span className="truncate text-lg font-bold tracking-tight">{trip.name}</span>
+          <Link
+            href={`/tur/${trip.id}/print`}
+            className="ml-auto shrink-0 rounded-full bg-white/10 px-3 py-1 text-xs text-white/60 hover:bg-white/20 hover:text-white"
+          >
+            🖨 Skriv ut
+          </Link>
         </header>
 
         <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8">
@@ -72,7 +80,31 @@ export default async function TurPage({ params }: Props) {
               {days && <span>⏱ {days} dag{days !== 1 ? "er" : ""}</span>}
             </div>
 
-            {shareUrl && <TripShareButton shareUrl={shareUrl} />}
+            <div className="flex flex-wrap gap-2">
+              {shareUrl && <TripShareButton shareUrl={shareUrl} />}
+              {trip.routeLat && trip.routeLon && (
+                <TripOfflineDownload
+                  tripId={trip.id}
+                  name={trip.name}
+                  routeId={trip.routeId}
+                  routeLon={trip.routeLon}
+                  routeLat={trip.routeLat}
+                  routeName={trip.routeName}
+                  startDate={trip.startDate}
+                  endDate={trip.endDate}
+                  groupName={trip.group?.name}
+                  members={(trip.group?.members ?? []).map((m) => ({
+                    name: m.name,
+                    experienceLevel: m.experienceLevel,
+                  }))}
+                  cabins={sortedCabins.map((c) => ({
+                    cabinId: c.cabinId,
+                    cabinName: c.cabinName,
+                    dayNumber: c.dayNumber,
+                  }))}
+                />
+              )}
+            </div>
           </div>
 
           {/* Map — route + cabins in area */}
@@ -89,13 +121,16 @@ export default async function TurPage({ params }: Props) {
             />
           )}
 
-          {/* Weather */}
-          {trip.routeLat && trip.routeLon && (
-            <TripWeather lat={trip.routeLat} lon={trip.routeLon} startDate={trip.startDate ?? undefined} endDate={trip.endDate ?? undefined} />
+          {/* Day-by-day timeline — cabin + weather + distance + elevation per stage */}
+          {sortedCabins.length > 0 && trip.routeLat && trip.routeLon && (
+            <TripDayTimeline
+              lat={trip.routeLat}
+              lon={trip.routeLon}
+              startDate={trip.startDate ?? undefined}
+              cabins={sortedCabins}
+            />
           )}
-
-          {/* Day-by-day */}
-          {sortedCabins.length > 0 && (
+          {sortedCabins.length > 0 && !(trip.routeLat && trip.routeLon) && (
             <div className="flex flex-col gap-3">
               <h2 className="text-lg font-bold text-white">Dagsplan</h2>
               <div className="flex flex-col gap-2">
@@ -104,7 +139,7 @@ export default async function TurPage({ params }: Props) {
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-700 text-sm font-bold text-white">
                       {c.dayNumber}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium text-white">{c.cabinName}</p>
                       <p className="text-xs text-white/40">Dag {c.dayNumber}</p>
                     </div>
