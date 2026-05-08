@@ -2,18 +2,19 @@ import { postRouter } from "~/server/api/routers/post";
 import { weatherRouter } from "~/server/api/routers/weather";
 import { cabinsRouter } from "~/server/api/routers/cabins";
 import { groupsRouter } from "~/server/api/routers/groups";
+import { routesRouter } from "~/server/api/routers/routes";
+import { tripsRouter } from "~/server/api/routers/trips";
+import { expensesRouter } from "~/server/api/routers/expenses";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
-/**
- * This is the primary router for your server.
- *
- * All routers added in /api/routers should be manually added here.
- */
 export const appRouter = createTRPCRouter({
   post: postRouter,
   weather: weatherRouter,
   cabins: cabinsRouter,
   groups: groupsRouter,
+  routes: routesRouter,
+  trips: tripsRouter,
+  expenses: expensesRouter,
 });
 
 // export type definition of API

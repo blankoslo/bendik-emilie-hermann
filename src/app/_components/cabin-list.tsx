@@ -45,7 +45,11 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export function CabinList() {
+interface CabinListProps {
+  near?: { lon: number; lat: number };
+}
+
+export function CabinList({ near }: CabinListProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState<ServiceLevel[]>([]);
@@ -65,18 +69,39 @@ export function CabinList() {
 
   const { data: listData, isLoading: listLoading } = api.cabins.list.useQuery(
     commonInput,
-    { enabled: debouncedSearch.length === 0 },
+    { enabled: !near && debouncedSearch.length === 0 },
   );
 
   const { data: searchData, isLoading: searchLoading } = api.cabins.search.useQuery(
     { ...commonInput, query: debouncedSearch },
-    { enabled: debouncedSearch.length > 0 },
+    { enabled: !near && debouncedSearch.length > 0 },
   );
 
-  const raw = debouncedSearch ? searchData : listData;
-  const connection = (raw as { cabins: CabinsConnection } | undefined)?.cabins;
-  const cabins = connection?.edges.map((e) => e.node) ?? [];
-  const isLoading = debouncedSearch ? searchLoading : listLoading;
+  const { data: nearData, isLoading: nearLoading } = api.cabins.near.useQuery(
+    { lon: near?.lon ?? 0, lat: near?.lat ?? 0 },
+    { enabled: !!near },
+  );
+
+  let cabins: Cabin[];
+  let isLoading: boolean;
+  let countLabel: string | null = null;
+
+  if (near) {
+    const nearItems = (nearData as { cabinsNear?: { distance: number; cabin: Cabin }[] } | undefined)?.cabinsNear ?? [];
+    cabins = nearItems.map((r) => r.cabin);
+    isLoading = nearLoading;
+    if (!nearLoading) countLabel = `${cabins.length} hytter nær valgt sted`;
+  } else {
+    const raw = debouncedSearch ? searchData : listData;
+    const connection = (raw as { cabins: CabinsConnection } | undefined)?.cabins;
+    cabins = connection?.edges.map((e) => e.node) ?? [];
+    isLoading = debouncedSearch ? searchLoading : listLoading;
+    if (!isLoading && connection?.totalCount !== undefined) {
+      countLabel = debouncedSearch
+        ? `${connection.totalCount} treff`
+        : `Viser ${cabins.length} av ${connection.totalCount} hytter`;
+    }
+  }
 
   return (
     <section className="w-full max-w-4xl">
@@ -127,12 +152,8 @@ export function CabinList() {
 
       {!isLoading && cabins.length > 0 && (
         <>
-          {connection?.totalCount !== undefined && (
-            <p className="mb-3 text-sm text-white/50">
-              {debouncedSearch
-                ? `${connection.totalCount} treff`
-                : `Viser ${cabins.length} av ${connection.totalCount} hytter`}
-            </p>
+          {countLabel && (
+            <p className="mb-3 text-sm text-white/50">{countLabel}</p>
           )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {cabins.map((cabin) => {
