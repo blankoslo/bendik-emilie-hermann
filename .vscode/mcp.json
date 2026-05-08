@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"my-mcp-server-f8da3ad2": {
+			"url": "http://127.0.0.1:3845/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
