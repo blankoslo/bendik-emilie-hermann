@@ -1,83 +1,63 @@
-import Link from "next/link";
+import { HydrateClient } from "~/trpc/server";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { WeatherWidget } from "./_components/weather-widget";
+import { CabinList } from "./_components/cabin-list";
 
-import { LatestPost } from "~/app/_components/post";
-import { api, HydrateClient } from "~/trpc/server";
-import {
-  ClerkProvider,
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
-
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-
-  void api.post.getLatest.prefetch();
-
+export default function Home() {
   return (
     <HydrateClient>
-      <header className="flex h-16 items-center justify-end gap-4 p-4">
-        <Show when="signed-out">
-          <SignInButton />
-          <SignUpButton>
-            <button className="h-10 cursor-pointer rounded-full bg-purple-700 px-4 text-sm font-medium text-white sm:h-12 sm:px-5 sm:text-base">
-              Sign Up
-            </button>
-          </SignUpButton>
-        </Show>
-        <Show when="signed-in">
-          <UserButton />
-        </Show>
-      </header>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <Show when="signed-out">
-          <SignInButton />
-          <SignUpButton>
-            <button className="h-10 cursor-pointer rounded-full bg-purple-700 px-4 text-sm font-medium text-white sm:h-12 sm:px-5 sm:text-base">
-              Sign Up
-            </button>
-          </SignUpButton>
-        </Show>
-        <Show when="signed-in">
-          <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-              Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-            </h1>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-              <Link
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-                href="https://create.t3.gg/en/usage/first-steps"
-                target="_blank"
-              >
-                <h3 className="text-2xl font-bold">First Steps →</h3>
-                <div className="text-lg">
-                  Just the basics - Everything you need to know to set up your
-                  database and authentication.
-                </div>
-              </Link>
-              <Link
-                className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-                href="https://create.t3.gg/en/introduction"
-                target="_blank"
-              >
-                <h3 className="text-2xl font-bold">Documentation →</h3>
-                <div className="text-lg">
-                  Learn more about Create T3 App, the libraries it uses, and how
-                  to deploy it.
-                </div>
-              </Link>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-2xl text-white">
-                {hello ? hello.greeting : "Loading tRPC query..."}
-              </p>
-            </div>
-
-            <LatestPost />
+      <div className="min-h-screen bg-gradient-to-b from-[#0f2d1f] to-[#0a1a12] text-white">
+        <header className="flex h-16 items-center justify-between px-6">
+          <span className="text-lg font-bold tracking-tight">
+            🏔️ Friluftskompis
+          </span>
+          <div className="flex items-center gap-3">
+            <Show when="signed-in">
+              <WeatherWidget />
+              <UserButton />
+            </Show>
+            <Show when="signed-out">
+              <SignInButton />
+              <SignUpButton>
+                <button className="rounded-full bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-600">
+                  Registrer deg
+                </button>
+              </SignUpButton>
+            </Show>
           </div>
-        </Show>
-      </main>
+        </header>
+
+        <main className="flex flex-col items-center px-4 py-12">
+          <Show when="signed-out">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
+                Planlegg turen
+              </h1>
+              <p className="max-w-md text-lg text-white/60">
+                Friluftskompis samler vær, hytter og ruter på ett sted. Fra
+                &quot;skal vi dra?&quot; til oppsummering.
+              </p>
+              <SignInButton>
+                <button className="rounded-full bg-green-700 px-6 py-3 text-base font-semibold text-white hover:bg-green-600">
+                  Kom i gang
+                </button>
+              </SignInButton>
+            </div>
+          </Show>
+
+          <Show when="signed-in">
+            <div className="flex w-full max-w-4xl flex-col items-center gap-8">
+              <div className="text-center">
+                <h1 className="text-4xl font-extrabold tracking-tight">
+                  Finn din neste tur
+                </h1>
+                <p className="mt-2 text-white/50">Søk blant 1 999 DNT-hytter</p>
+              </div>
+              <CabinList />
+            </div>
+          </Show>
+        </main>
+      </div>
     </HydrateClient>
   );
 }
